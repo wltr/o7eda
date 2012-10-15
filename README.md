@@ -1,7 +1,7 @@
 o7sim
 =====
 
-A ModelSim simulation script inspired by the people of HSSE07 at the Upper Austrian University of Applied Sciences Hagenberg.
+A ModelSim simulation script inspired by the students of HSSE07 at the Upper Austrian University of Applied Sciences Hagenberg.
 
 As many other EDA tools, ModelSim from Mentor Graphics supports scripting. This provides the abbility to automate simulation workflows using TCL scripts. By adjusting the configuration parameters, all simulation steps are done automatically. If you have any patches, feel free to submit them.
 
