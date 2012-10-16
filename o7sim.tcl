@@ -1,7 +1,7 @@
 #!/usr/bin/tclsh
 
 # --------------------------------------------------
-# o7sim - ModelSim simulation script
+# o7sim - ModelSim Simulation Script
 #
 # Copyright (C) 2012  Johannes Walter
 # Special thanks to:
