@@ -44,7 +44,11 @@ set systemc_ext "*.cpp"
 set lib "work"
 set run_time "-all"
 set design "top"
+
+# Coverage parameters
 set enable_coverage 0
+set save_coverage 0
+set coverage_db_filename "vsim.ucdb"
 
 # Custom UVM library parameters
 set enable_custom_uvm 0
@@ -57,7 +61,7 @@ set verilog_param ""
 set systemverilog_param ""
 set systemc_param "-g -DSC_INCLUDE_DYNAMIC_PROCESSES"
 set scgenmod_param ""
-set vsim_param "-novopt -noglitch +notimingchecks -t ns"
+set vsim_param "-novopt -t ns"
 
 # GUI parameters
 set show_gui 1
@@ -318,6 +322,11 @@ if {$show_wave == 1} {
 
 # Run
 eval run $run_time
+
+# Save coverage database
+if {$enable_coverage == 1 && $save_coverage == 1} {
+    eval coverage save $coverage_db_filename
+}
 
 # Zoom
 if {$show_wave == 1} {
