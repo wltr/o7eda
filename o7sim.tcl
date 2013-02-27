@@ -271,7 +271,6 @@ if {$sysc_src_changed == 1} {
 puts "Starting simulation"
 
 if {$show_gui == 0} {
-    append vsim_param " -c"
     eval onbreak resume
 }
 
@@ -326,6 +325,14 @@ if {$show_gui == 1 && $show_wave == 1} {
         }
     }
     eval configure wave -timelineunits $wave_time_unit
+} elseif {$show_gui == 0 && $show_wave == 1} {
+    foreach wave_pattern $wave_patterns {
+        set find_param ""
+        if {[lindex $wave_pattern 1] == 1} {
+            set find_param "-recursive"
+        }
+        eval log $find_param [lindex $wave_pattern 0]
+    }
 }
 
 # Run
