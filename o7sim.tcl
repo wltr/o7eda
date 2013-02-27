@@ -287,7 +287,7 @@ set ct_secs [expr {$ct_microsecs / 1000000.0}]
 puts [format "Runtime: %6.4f sec" $ct_secs]
 
 # Generate wave form
-if {$show_wave == 1} {
+if {$show_gui == 1 && $show_wave == 1} {
     foreach wave_pattern $wave_patterns {
         set find_param ""
         if {[lindex $wave_pattern 1] == 1} {
