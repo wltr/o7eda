@@ -61,11 +61,12 @@ set verilog_param ""
 set systemverilog_param ""
 set systemc_param "-g -DSC_INCLUDE_DYNAMIC_PROCESSES"
 set scgenmod_param ""
-set vsim_param "-novopt -t ns"
+set vsim_param "-onfinish final -novopt -t ns"
 
-# GUI parameters
+# Program parameters
 set show_gui 1
 set show_wave 1
+set quit_at_end 0
 
 # Waveform parameters
 # {Path Recursive}
@@ -271,6 +272,7 @@ puts "Starting simulation"
 
 if {$show_gui == 0} {
     append vsim_param " -c"
+    eval onbreak resume
 }
 
 set vsim_lib_param ""
@@ -284,7 +286,7 @@ foreach verilog_sim_lib $verilog_sim_libs {
 set runtime [time [format "vsim %s %s %s" $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
-puts [format "Runtime: %6.4f sec" $ct_secs]
+puts [format "Elaboration time: %6.4f sec" $ct_secs]
 
 # Generate wave form
 if {$show_gui == 1 && $show_wave == 1} {
@@ -327,7 +329,10 @@ if {$show_gui == 1 && $show_wave == 1} {
 }
 
 # Run
-eval run $run_time
+set runtime [time [format "run %s" $run_time]]
+regexp {\d+} $runtime ct_microsecs
+set ct_secs [expr {$ct_microsecs / 1000000.0}]
+puts [format "Simulation time: %6.4f sec" $ct_secs]
 
 # Save coverage database
 if {$enable_coverage == 1 && $save_coverage == 1} {
@@ -340,6 +345,6 @@ if {$show_gui == 1 && $show_wave == 1} {
 }
 
 # Quit
-if {$show_gui == 0} {
+if {$quit_at_end == 1} {
     eval quit -f
 }
