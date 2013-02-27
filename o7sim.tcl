@@ -339,3 +339,7 @@ if {$show_gui == 1 && $show_wave == 1} {
     eval wave zoomfull -windows wave
 }
 
+# Quit
+if {$show_gui == 0} {
+    eval quit -f
+}
