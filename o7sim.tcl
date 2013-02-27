@@ -335,7 +335,7 @@ if {$enable_coverage == 1 && $save_coverage == 1} {
 }
 
 # Zoom
-if {$show_wave == 1} {
+if {$show_gui == 1 && $show_wave == 1} {
     eval wave zoomfull -windows wave
 }
 
