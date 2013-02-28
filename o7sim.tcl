@@ -50,6 +50,12 @@ set enable_coverage 0
 set save_coverage 0
 set coverage_db_filename "vsim.ucdb"
 
+# Assertion thread viewing parameters
+set enable_atv 0
+set atv_log_patterns {
+    "/*"
+}
+
 # Custom UVM library parameters
 set enable_custom_uvm 0
 set custom_uvm_home "/path/to/uvm-1.1"
@@ -165,6 +171,12 @@ if {$enable_coverage == 1} {
     append systemverilog_param " +cover"
     append systemc_param " +cover"
     append vsim_param " -coverage"
+}
+
+# Set assertion thread viewing parameters
+if {$enable_atv == 1} {
+    puts "Assertion thread viewing enabled"
+    append vsim_param " -assertdebug"
 }
 
 # Additional SystemC include paths
@@ -286,6 +298,13 @@ set runtime [time [format "vsim %s %s %s" $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
 puts [format "Elaboration time: %6.4f sec" $ct_secs]
+
+# Enable assertion thread view logging
+if {$enable_atv == 1} {
+    foreach atv_log_pattern $atv_log_patterns {
+        eval atv log -enable -recursive $atv_log_pattern
+    }
+}
 
 # Generate wave form
 if {$show_gui == 1 && $show_wave == 1} {
