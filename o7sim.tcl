@@ -127,12 +127,6 @@ puts "\n--------------------------------------------------------"
 puts [format "Started simulation script, %s" [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]]
 puts "--------------------------------------------------------"
 
-# Clean-up
-if {[file exists $lib] == 1} {
-    puts "Clean-up"
-    eval vdel -all
-}
-
 # Map work library
 puts [format "Mapping library: %s" $lib]
 eval vlib $lib
