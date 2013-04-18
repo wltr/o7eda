@@ -78,7 +78,7 @@ set quit_at_end 0
 # {Path Recursive}
 set wave_patterns {
     {"/*" 0}
-    {"/top/dut/*" 1}
+    {"/top/duv/*" 1}
 }
 set wave_ignores {
     "/top/clk"
@@ -92,7 +92,7 @@ set wave_inout_pattern "*_io"
 # Additional VHDL simulation libraries
 # {Name Path}
 set vhdl_sim_libs {}
-#   {"xilinxcorelib" "/opt/xilinxcorelib"} 
+#   {"xilinxcorelib" "/opt/xilinxcorelib"}
 #}
 
 # Additional Verilog/SystemVerilog simulation libraries
