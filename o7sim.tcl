@@ -117,6 +117,7 @@ set systemc_lib_names {}
 #}
 
 # TCL script parameters
+set save_compile_times 1
 set compile_time_file ".compile_time.txt"
 
 # --------------------------------------------------
@@ -261,11 +262,13 @@ foreach src_entry $src {
 }
 
 # Write compile times
-set fp [open $compile_time_file w]
-foreach entry [array names new_compile_time] {
-    puts $fp [format "%s %u" $entry $new_compile_time($entry)]
+if {$save_compile_times == 1} {
+    set fp [open $compile_time_file w]
+    foreach entry [array names new_compile_time] {
+        puts $fp [format "%s %u" $entry $new_compile_time($entry)]
+    }
+    close $fp
 }
-close $fp
 
 # Link SystemC source
 if {$sysc_src_changed == 1} {
