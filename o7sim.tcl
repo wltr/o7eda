@@ -120,7 +120,7 @@ if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
 }
 
 # Map work library
-puts [format "Mapping library: %s" $work_lib]
+puts [format "Mapping work library: %s" $work_lib]
 eval vlib $work_lib
 eval vmap  $work_lib $work_lib
 
