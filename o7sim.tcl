@@ -2,11 +2,10 @@
 
 # --------------------------------------------------
 # o7sim - ModelSim Simulation Script
+# Version:
+  set version 0.2
 #
-# Copyright (C) 2012  Johannes Walter
-# Special thanks to:
-#   Marko Prskalo    (Automatic waveform generation)
-#   Martin Klepatsch (Compile only modified files)
+# Copyright (C) 2013  Johannes Walter
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,27 +27,26 @@
 set src_dir "../src"
 
 # Source files in compilation order
-# {File SCGenMod SCModName}
 set src {
-    {"module.cpp" 1 "module"}
-    {"top.vhd" 0}
+    "component.vhd"
+    "testbench.sv"
 }
 
 # Source file extensions
 set vhdl_ext "*.vhd"
 set verilog_ext "*.v"
 set systemverilog_ext "*.sv"
-set systemc_ext "*.cpp"
 
 # Simulation parameters
 set lib "work"
 set run_time "-all"
-set design "top"
+set time_unit "ns"
+set design "testbench"
 
 # Coverage parameters
 set enable_coverage 0
 set save_coverage 0
-set coverage_db_filename "vsim.ucdb"
+set coverage_db_filename "o7sim_coverage.ucdb"
 
 # Assertion thread viewing parameters
 set enable_atv 0
@@ -65,9 +63,7 @@ set custom_uvm_dpi "/path/to/uvm-1.1/lib/uvm_dpi64"
 set vhdl_param ""
 set verilog_param ""
 set systemverilog_param ""
-set systemc_param "-g -DSC_INCLUDE_DYNAMIC_PROCESSES"
-set scgenmod_param ""
-set vsim_param "-onfinish final -novopt -t ns"
+set vsim_param "-onfinish final -novopt"
 
 # Program parameters
 set show_gui 1
@@ -78,77 +74,62 @@ set quit_at_end 0
 # {Path Recursive}
 set wave_patterns {
     {"/*" 0}
-    {"/top/duv/*" 1}
+    {"/testbench/duv/*" 1}
 }
 set wave_ignores {
-    "/top/clk"
+    "/testbench/clk"
+    "/testbench/rst_n"
 }
 set wave_radix "hex"
 set wave_time_unit "ns"
-set wave_input_pattern "*_i"
-set wave_output_pattern "*_o"
-set wave_inout_pattern "*_io"
+set wave_expand 1
 
-# Additional VHDL simulation libraries
+# Additional simulation libraries
 # {Name Path}
-set vhdl_sim_libs {}
+set sim_libs {}
 #   {"xilinxcorelib" "/opt/xilinxcorelib"}
 #}
 
-# Additional Verilog/SystemVerilog simulation libraries
-# {Name Path}
-set verilog_sim_libs {}
-#   {"xilinxcorelib_ver" "/opt/xilinxcorelib_ver"}
-#}
-
-# Additional SystemC include paths
-set systemc_inc_paths {}
+# Additional Verilog include paths
+set verilog_inc_paths {}
 #   "/path/to/include"
 #}
 
-# Additional SystemC library paths
-set systemc_lib_paths {}
-#   "/path/to/lib"
-#}
-
-# Additional SystemC libraries
-set systemc_lib_names {}
-#   "name"
+# Additional SystemVerilog include paths
+set systemverilog_inc_paths {}
+#   "/path/to/include"
 #}
 
 # TCL script parameters
 set save_compile_times 1
-set compile_time_file ".compile_time.txt"
+set compile_time_file ".o7sim_compile_times.txt"
 
-# --------------------------------------------------
+#------------------------------------------------------------------------------
 # DO NOT EDIT BELOW THIS LINE
-# --------------------------------------------------
+#------------------------------------------------------------------------------
 
-puts "\n--------------------------------------------------------"
-puts [format "Started simulation script, %s" [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]]
-puts "--------------------------------------------------------"
+set now [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
+puts "\n-------------------------------------------------------------------"
+puts [format "Started o7sim v%s simulation script, %s" $version $now]
+puts "-------------------------------------------------------------------"
+
+# Clean-up
+if {$save_compile_times == 0 && [file exists $lib] == 1} {
+    puts "Clean-up"
+    eval vdel -all
+}
 
 # Map work library
 puts [format "Mapping library: %s" $lib]
 eval vlib $lib
 eval vmap  $lib $lib
 
-# Map VHDL libraries
-foreach vhdl_sim_lib_entry $vhdl_sim_libs {
-    set vhdl_sim_lib_name [lindex $vhdl_sim_lib_entry 0]
-    set vhdl_sim_lib_path [lindex $vhdl_sim_lib_entry 1]
-
-    puts [format "Mapping VHDL library: %s" $vhdl_sim_lib_name]
-    eval vmap $vhdl_sim_lib_name $vhdl_sim_lib_path
-}
-
-# Map Verilog/SystemVerilog libraries
-foreach verilog_sim_lib_entry $verilog_sim_libs {
-    set verilog_sim_lib_name [lindex $verilog_sim_lib_entry 0]
-    set verilog_sim_lib_path [lindex $verilog_sim_lib_entry 1]
-
-    puts [format "Mapping Verilog/SystemVerilog library: %s" $verilog_sim_lib_name]
-    eval vmap $verilog_sim_lib_name $verilog_sim_lib_path
+# Map additional simulation libraries
+foreach sim_lib $sim_libs {
+    set sim_lib_name [lindex $sim_lib 0]
+    set sim_lib_path [lindex $sim_lib 1]
+    puts [format "Mapping simulation library: %s" $sim_lib_name]
+    eval vmap $sim_lib_name $sim_lib_path
 }
 
 # Compile UVM library
@@ -156,6 +137,7 @@ if {$enable_custom_uvm == 1} {
     puts "Compiling UVM library"
     eval vlog +incdir+$custom_uvm_home/src -work $lib $custom_uvm_home/src/uvm.sv
     append vsim_param [format " -sv_lib %s" $custom_uvm_dpi]
+    lappend systemverilog_inc_paths [format "%s/src" $custom_uvm_home]
 }
 
 # Set coverage parameters
@@ -164,7 +146,6 @@ if {$enable_coverage == 1} {
     append vhdl_param " +cover"
     append verilog_param " +cover"
     append systemverilog_param " +cover"
-    append systemc_param " +cover"
     append vsim_param " -coverage"
 }
 
@@ -174,22 +155,16 @@ if {$enable_atv == 1} {
     append vsim_param " -assertdebug"
 }
 
-# Additional SystemC include paths
-set systemc_inc_param ""
-foreach systemc_inc_path $systemc_inc_paths {
-    append systemc_inc_param [format "-I%s " $systemc_inc_path]
+# Additional Verilog include paths
+set verilog_inc_param ""
+foreach verilog_inc_path $verilog_inc_paths {
+    append verilog_inc_param [format " +incdir+%s" $verilog_inc_path]
 }
 
-# Additional SystemC library paths
-set systemc_lib_path_param ""
-foreach systemc_lib_path $systemc_lib_paths {
-    append systemc_lib_path_param [format "-L%s " $systemc_lib_path]
-}
-
-# Additional SystemC libraries
-set systemc_lib_name_param ""
-foreach systemc_lib_name $systemc_lib_names {
-    append systemc_lib_name_param [format "-l%s " $systemc_lib_name]
+# Additional SystemVerilog include paths
+set systemverilog_inc_param ""
+foreach systemverilog_inc_path $systemverilog_inc_paths {
+    append systemverilog_inc_param [format " +incdir+%s" $systemverilog_inc_path]
 }
 
 # Read compile times
@@ -205,57 +180,25 @@ if {[file isfile $compile_time_file] == 1} {
 }
 
 # Compile sources
-set sysc_src_changed 0
-foreach src_entry $src {
-    set src_file [lindex $src_entry 0]
+foreach src_file $src {
     set file_name [format "%s/%s" $src_dir $src_file]
     # Check if source has changed
-    if {[info exists last_compile_time($file_name)] == 1 && [file mtime $file_name] <= $last_compile_time($file_name)} {
+    if {$save_compile_times == 1 && [info exists last_compile_time($file_name)] == 1 && [file mtime $file_name] <= $last_compile_time($file_name)} {
         puts [format "Source has not changed: %s" $src_file]
         set new_compile_time($file_name) $last_compile_time($file_name)
     } else {
-        if {[string match $systemc_ext $src_file] == 1} {
-            # Compile SystemC source
-            puts [format "Compiling SystemC source: %s" $src_file]
-            eval sccom $systemc_inc_param $systemc_param -work $lib -scv -scms $file_name
-            set sysc_src_changed 1
-        } elseif {[string match $vhdl_ext $src_file] == 1} {
+        if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
             puts [format "Compiling VHDL source: %s" $src_file]
             eval vcom $vhdl_param -work $lib $file_name
-            # Generate SystemC module
-            if {[lindex $src_entry 1] == 1} {
-                set scgenmod_name [lindex $src_entry 2]
-                set cpp_name [format "%s.cpp" $scgenmod_name]
-                puts [format "Generating SystemC module: %s" $cpp_name]
-                eval scgenmod -lib $lib $scgenmod_param $scgenmod_name > $src_dir/$cpp_name
-            }
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
             puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog $verilog_param +incdir+$src_dir -work $lib $file_name
-            # Generate SystemC module
-            if {[lindex $src_entry 1] == 1} {
-                set scgenmod_name [lindex $src_entry 2]
-                set cpp_name [format "%s.cpp" $scgenmod_name]
-                puts [format "Generating SystemC module: %s" $cpp_name]
-                eval scgenmod -lib $lib $scgenmod_param $scgenmod_name > $src_dir/$cpp_name
-            }
+            eval vlog $verilog_param $verilog_inc_param +incdir+$src_dir -work $lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
             puts [format "Compiling SystemVerilog source: %s" $src_file]
-            if {$enable_custom_uvm == 0} {
-                eval vlog $systemverilog_param +incdir+$src_dir -work $lib $file_name
-            } else {
-                eval vlog $systemverilog_param +incdir+$custom_uvm_home/src+$src_dir -work $lib $file_name
-            }
-            # Generate SystemC module
-            if {[lindex $src_entry 1] == 1} {
-                set scgenmod_name [lindex $src_entry 2]
-                set cpp_name [format "%s.cpp" $scgenmod_name]
-                puts [format "Generating SystemC module: %s" $cpp_name]
-                eval scgenmod -lib $lib $scgenmod_param $scgenmod_name > $src_dir/$cpp_name
-            }
+            eval vlog $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
@@ -270,12 +213,6 @@ if {$save_compile_times == 1} {
     close $fp
 }
 
-# Link SystemC source
-if {$sysc_src_changed == 1} {
-    puts "Linking SystemC source"
-    eval sccom -link -work $lib -scv -scms $systemc_lib_path_param $systemc_lib_name_param
-}
-
 # Simulate
 puts "Starting simulation"
 
@@ -284,13 +221,11 @@ if {$show_gui == 0} {
 }
 
 set vsim_lib_param ""
-foreach vhdl_sim_lib $vhdl_sim_libs {
-    append vsim_lib_param [format " -L %s" [lindex $vhdl_sim_lib 0]]
-}
-foreach verilog_sim_lib $verilog_sim_libs {
-    append vsim_lib_param [format " -L %s" [lindex $verilog_sim_lib 0]]
+foreach sim_lib $sim_libs {
+    append vsim_lib_param [format " -L %s" [lindex $sim_lib 0]]
 }
 
+append vsim_param [format " -t %s" $time_unit]
 set runtime [time [format "vsim %s %s %s" $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
@@ -305,39 +240,67 @@ if {$enable_atv == 1} {
 
 # Generate wave form
 if {$show_gui == 1 && $show_wave == 1} {
+    set wave_expand_param ""
+    if {$wave_expand == 1} {
+        append wave_expand_param "-expand"
+    }
+    set sig_list {}
     foreach wave_pattern $wave_patterns {
         set find_param ""
         if {[lindex $wave_pattern 1] == 1} {
-            set find_param "-r"
+            set find_param "-recursive"
         }
-        set sig_list [eval find signals $find_param [lindex $wave_pattern 0]]
-        set sig_list [lsort -dictionary $sig_list]
-        foreach sig $sig_list {
-            set ignore 0
-            foreach ignore_pattern $wave_ignores {
-                if {[string match $ignore_pattern $sig] == 1} {
-                    set ignore 1
-                }
+        set int_list [eval find signals -internal $find_param [lindex $wave_pattern 0]]
+        set in_list [eval find signals -in $find_param [lindex $wave_pattern 0]]
+        set out_list [eval find signals -out $find_param [lindex $wave_pattern 0]]
+        set inout_list [eval find signals -inout $find_param [lindex $wave_pattern 0]]
+        set blk_list [eval find block $find_param [lindex $wave_pattern 0]]
+        foreach int_list_item $int_list {
+            lappend sig_list [list $int_list_item 0]
+        }
+        foreach in_list_item $in_list {
+            lappend sig_list [list $in_list_item 1]
+        }
+        foreach out_list_item $out_list {
+            lappend sig_list [list $out_list_item 2]
+        }
+        foreach inout_list_item $inout_list {
+            lappend sig_list [list $inout_list_item 3]
+        }
+        foreach blk_list_item $blk_list {
+            lappend sig_list [list [lindex [split $blk_list_item "("] 0] 4]
+        }
+    }
+    set sig_list [lsort -unique -dictionary -index 0 $sig_list]
+    foreach sig $sig_list {
+        set name [lindex $sig 0]
+        set type [lindex $sig 1]
+        set ignore 0
+        foreach ignore_pattern $wave_ignores {
+            if {[string match $ignore_pattern $name] == 1} {
+                set ignore 1
             }
-            if {$ignore == 0} {
-                set path [split $sig "/"]
-                set wave_param ""
-                for {set x 1} {$x < [expr [llength $path] - 1]} {incr x} {
-                    append wave_param [format "-group %s " [lindex $path $x]]
-                }
-                set label [lindex $path [expr [llength $path] - 1]]
-                if {[string match $wave_input_pattern $label] == 1} {
-                    append wave_param "-group Ports -group In"
-                } elseif {[string match $wave_output_pattern $label] == 1} {
-                    append wave_param "-group Ports -group Out"
-                } elseif {[string match $wave_inout_pattern $label] == 1} {
-                    append wave_param "-group Ports -group InOut"
-                } else {
-                    append wave_param "-group Internals"
-                }
-                append wave_param [format " -label %s" $label]
-                eval add wave -radix $wave_radix $wave_param $sig
+        }
+        if {$ignore == 0} {
+            set path [split $name "/"]
+            set wave_param ""
+            for {set x 1} {$x < [expr [llength $path] - 1]} {incr x} {
+                append wave_param [format "%s -group %s " $wave_expand_param [lindex $path $x]]
             }
+            if {$type == 0} {
+                append wave_param [format "%s -group Internal" $wave_expand_param]
+            } elseif {$type == 1} {
+                append wave_param [format "%s -group Ports %s -group In" $wave_expand_param $wave_expand_param]
+            } elseif {$type == 2} {
+                append wave_param [format "%s -group Ports %s -group Out" $wave_expand_param $wave_expand_param]
+            } elseif {$type == 3} {
+                append wave_param [format "%s -group Ports %s -group InOut" $wave_expand_param $wave_expand_param]
+            } elseif {$type == 4} {
+                append wave_param [format "%s -group Assertions" $wave_expand_param]
+            }
+            set label [lindex $path [expr [llength $path] - 1]]
+            append wave_param [format " -label %s" $label]
+            eval add wave -radix $wave_radix $wave_param $name
         }
     }
     eval configure wave -timelineunits $wave_time_unit
