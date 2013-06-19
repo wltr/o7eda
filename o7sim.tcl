@@ -229,7 +229,7 @@ append vsim_param [format " -t %s" $time_unit]
 set runtime [time [format "vsim %s %s %s" $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
-puts [format "Elaboration time: %6.4f sec" $ct_secs]
+puts [format "Elaboration time: %.4f sec" $ct_secs]
 
 # Enable assertion thread view logging
 if {$enable_atv == 1} {
@@ -318,7 +318,8 @@ if {$show_gui == 1 && $show_wave == 1} {
 set runtime [time [format "run %s" $run_time]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
-puts [format "Simulation time: %6.4f sec" $ct_secs]
+puts [format "Simulation time: %s %s" $now $time_unit]
+puts [format "Run time: %.4f sec" $ct_secs]
 
 # Save coverage database
 if {$enable_coverage == 1 && $save_coverage == 1} {
