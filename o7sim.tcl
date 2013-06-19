@@ -3,7 +3,7 @@
 # --------------------------------------------------
 # o7sim - ModelSim Simulation Script
 # Version:
-  set version 0.2
+  set version 0.3
 #
 # Copyright (C) 2013  Johannes Walter
 #
@@ -39,19 +39,26 @@ set systemverilog_ext "*.sv"
 
 # Simulation parameters
 set work_lib "work"
+set design "testbench"
 set run_time "-all"
 set time_unit "ns"
-set design "testbench"
+
+# Standard delay format timing parameters
+set enable_sdf_timing 0
+# {Object File}
+set sdf_timing_files {
+    {"/testbench/duv" "component.sdf"}
+}
 
 # Coverage parameters
 set enable_coverage 0
 set save_coverage 0
-set coverage_db_filename "o7sim_coverage.ucdb"
 
 # Assertion thread viewing parameters
 set enable_atv 0
+# {Object Recursive}
 set atv_log_patterns {
-    "/*"
+    {"/*" 1}
 }
 
 # Custom UVM library parameters
@@ -60,10 +67,10 @@ set custom_uvm_home "/path/to/uvm-1.1"
 set custom_uvm_dpi "/path/to/uvm-1.1/lib/uvm_dpi64"
 
 # Command parameters
-set vhdl_param ""
-set verilog_param ""
-set systemverilog_param ""
-set vsim_param "-onfinish final -novopt"
+set vhdl_param "-fsmverbose btw"
+set verilog_param "-fsmverbose btw"
+set systemverilog_param "-fsmverbose btw"
+set vsim_param "-onfinish final"
 
 # Program parameters
 set show_gui 1
@@ -71,7 +78,7 @@ set show_wave 1
 set quit_at_end 0
 
 # Waveform parameters
-# {Path Recursive}
+# {Object Recursive}
 set wave_patterns {
     {"/*" 0}
     {"/testbench/duv/*" 1}
@@ -100,18 +107,24 @@ set systemverilog_inc_paths {}
 #   "/path/to/include"
 #}
 
-# TCL script parameters
+# Script parameters
 set save_compile_times 1
-set compile_time_file ".o7sim_compile_times.txt"
 
 #------------------------------------------------------------------------------
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-set now [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
+set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
-puts [format "Started o7sim v%s Simulation Script, %s" $version $now]
+puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp]
 puts "-------------------------------------------------------------------"
+
+# Logging filenames
+set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
+set transcript_filename [format "o7sim_%s_transcript.log" $log_timestamp]
+set wlf_log_db_filename [format "o7sim_%s_log.wlf" $log_timestamp]
+set coverage_db_filename [format "o7sim_%s_coverage.ucdb" $log_timestamp]
+set compile_time_filename "o7sim_compile_times.log"
 
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
@@ -149,6 +162,14 @@ if {$enable_coverage == 1} {
     append vsim_param " -coverage"
 }
 
+# Set standard delay format timing parameters
+if {$enable_sdf_timing == 1} {
+    puts "Adding SDF timing information"
+    foreach sdf_timing_file $sdf_timing_files {
+        append vsim_param [format " -sdfmax %s=%s/%s" [lindex $sdf_timing_file 0] $src_dir [lindex $sdf_timing_file 1]]
+    }
+}
+
 # Set assertion thread viewing parameters
 if {$enable_atv == 1} {
     puts "Assertion thread viewing enabled"
@@ -170,8 +191,8 @@ foreach systemverilog_inc_path $systemverilog_inc_paths {
 # Read compile times
 if {[info exists last_compile_time]} { unset last_compile_time }
 if {[info exists new_compile_time]} { unset new_compile_time }
-if {[file isfile $compile_time_file] == 1} {
-    set fp [open $compile_time_file r]
+if {[file isfile $compile_time_filename] == 1} {
+    set fp [open $compile_time_filename r]
     while {[gets $fp line] >= 0 } {
         scan $line "%s %u" file_name compile_time
         set last_compile_time($file_name) $compile_time
@@ -190,15 +211,15 @@ foreach src_file $src {
         if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
             puts [format "Compiling VHDL source: %s" $src_file]
-            eval vcom $vhdl_param -work $work_lib $file_name
+            eval vcom -novopt $vhdl_param -work $work_lib $file_name
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
             puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
             puts [format "Compiling SystemVerilog source: %s" $src_file]
-            eval vlog $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
@@ -206,7 +227,7 @@ foreach src_file $src {
 
 # Write compile times
 if {$save_compile_times == 1} {
-    set fp [open $compile_time_file w]
+    set fp [open $compile_time_filename w]
     foreach entry [array names new_compile_time] {
         puts $fp [format "%s %u" $entry $new_compile_time($entry)]
     }
@@ -225,7 +246,7 @@ foreach sim_lib $sim_libs {
     append vsim_lib_param [format " -L %s" [lindex $sim_lib 0]]
 }
 
-append vsim_param [format " -t %s" $time_unit]
+append vsim_param [format " -novopt -t %s -wlf %s -l %s" $time_unit $wlf_log_db_filename $transcript_filename]
 set runtime [time [format "vsim %s %s %s" $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
@@ -234,7 +255,11 @@ puts [format "Elaboration time: %.4f sec" $ct_secs]
 # Enable assertion thread view logging
 if {$enable_atv == 1} {
     foreach atv_log_pattern $atv_log_patterns {
-        eval atv log -enable -recursive $atv_log_pattern
+        set atv_log_param ""
+        if {[lindex $atv_log_pattern 1] == 1} {
+            set atv_log_param "-recursive"
+        }
+        eval atv log -enable $atv_log_param [lindex $atv_log_pattern 0]
     }
 }
 
