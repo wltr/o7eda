@@ -38,7 +38,7 @@ set verilog_ext "*.v"
 set systemverilog_ext "*.sv"
 
 # Simulation parameters
-set lib "work"
+set work_lib "work"
 set run_time "-all"
 set time_unit "ns"
 set design "testbench"
@@ -110,19 +110,19 @@ set compile_time_file ".o7sim_compile_times.txt"
 
 set now [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
-puts [format "Started o7sim v%s simulation script, %s" $version $now]
+puts [format "Started o7sim v%s Simulation Script, %s" $version $now]
 puts "-------------------------------------------------------------------"
 
 # Clean-up
-if {$save_compile_times == 0 && [file exists $lib] == 1} {
+if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
     puts "Clean-up"
     eval vdel -all
 }
 
 # Map work library
-puts [format "Mapping library: %s" $lib]
-eval vlib $lib
-eval vmap  $lib $lib
+puts [format "Mapping library: %s" $work_lib]
+eval vlib $work_lib
+eval vmap  $work_lib $work_lib
 
 # Map additional simulation libraries
 foreach sim_lib $sim_libs {
@@ -135,7 +135,7 @@ foreach sim_lib $sim_libs {
 # Compile UVM library
 if {$enable_custom_uvm == 1} {
     puts "Compiling UVM library"
-    eval vlog +incdir+$custom_uvm_home/src -work $lib $custom_uvm_home/src/uvm.sv
+    eval vlog +incdir+$custom_uvm_home/src -work $work_lib $custom_uvm_home/src/uvm.sv
     append vsim_param [format " -sv_lib %s" $custom_uvm_dpi]
     lappend systemverilog_inc_paths [format "%s/src" $custom_uvm_home]
 }
@@ -190,15 +190,15 @@ foreach src_file $src {
         if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
             puts [format "Compiling VHDL source: %s" $src_file]
-            eval vcom $vhdl_param -work $lib $file_name
+            eval vcom $vhdl_param -work $work_lib $file_name
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
             puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog $verilog_param $verilog_inc_param +incdir+$src_dir -work $lib $file_name
+            eval vlog $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
             puts [format "Compiling SystemVerilog source: %s" $src_file]
-            eval vlog $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $lib $file_name
+            eval vlog $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
