@@ -45,10 +45,8 @@ set time_unit "ns"
 
 # Standard delay format timing parameters
 set enable_sdf_timing 0
-# {Object File}
-set sdf_timing_files {
-    {"/testbench/duv" "component.sdf"}
-}
+set sdf_timing_filename "component.sdf"
+set sdf_timing_instance "/testbench/duv"
 
 # Coverage parameters
 set enable_coverage 0
@@ -165,9 +163,7 @@ if {$enable_coverage == 1} {
 # Set standard delay format timing parameters
 if {$enable_sdf_timing == 1} {
     puts "Adding SDF timing information"
-    foreach sdf_timing_file $sdf_timing_files {
-        append vsim_param [format " -sdfmax %s=%s/%s" [lindex $sdf_timing_file 0] $src_dir [lindex $sdf_timing_file 1]]
-    }
+    append vsim_param [format " -sdfmax %s=%s/%s" $sdf_timing_filename $src_dir $sdf_timing_instance]
 }
 
 # Set assertion thread viewing parameters
