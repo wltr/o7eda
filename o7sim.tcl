@@ -207,15 +207,15 @@ foreach src_file $src {
         if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
             puts [format "Compiling VHDL source: %s" $src_file]
-            eval vcom -novopt $vhdl_param -work $work_lib $file_name
+            eval vcom -l $transcript_filename -novopt $vhdl_param -work $work_lib $file_name
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
             puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -l $transcript_filename -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
             puts [format "Compiling SystemVerilog source: %s" $src_file]
-            eval vlog -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -l $transcript_filename -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
