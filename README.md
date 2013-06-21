@@ -16,4 +16,4 @@ Available features:
 Usage
 -----
 
-To use it, just modify the configuration parameters at the beginning of the file and start the script from the ModelSim command line with the following command: *source sim.tcl*
+To use it, just modify the configuration parameters at the beginning of the file and start the script from the ModelSim command line with the following command: *source o7sim.tcl*
