@@ -274,7 +274,7 @@ if {$show_gui == 1 && $show_wave == 1} {
         set in_list [eval find signals -in $find_param [lindex $wave_pattern 0]]
         set out_list [eval find signals -out $find_param [lindex $wave_pattern 0]]
         set inout_list [eval find signals -inout $find_param [lindex $wave_pattern 0]]
-        set blk_list [eval find block $find_param [lindex $wave_pattern 0]]
+        set blk_list [eval find blocks -nodu $find_param [lindex $wave_pattern 0]]
         foreach int_list_item $int_list {
             lappend sig_list [list $int_list_item 0]
         }
@@ -288,7 +288,9 @@ if {$show_gui == 1 && $show_wave == 1} {
             lappend sig_list [list $inout_list_item 3]
         }
         foreach blk_list_item $blk_list {
-            lappend sig_list [list [lindex [split $blk_list_item "("] 0] 4]
+            if {[string match "*\(*\)*" $blk_list_item] == 0} {
+                lappend sig_list [list $blk_list_item 4]
+            }
         }
     }
     set sig_list [lsort -unique -dictionary -index 0 $sig_list]
