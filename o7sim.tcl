@@ -3,7 +3,7 @@
 # --------------------------------------------------
 # o7sim - ModelSim Simulation Script
 # Version:
-  set version 0.3
+  set version 0.4
 #
 # Copyright (C) 2013  Johannes Walter
 #
@@ -88,6 +88,10 @@ set wave_ignores {
 set wave_radix "hex"
 set wave_time_unit "ns"
 set wave_expand 1
+
+set wave_zoom_range 0
+set wave_zoom_start_time "0"
+set wave_zoom_end_time "100"
 
 # Additional simulation libraries
 # {Name Path}
@@ -350,7 +354,12 @@ if {$enable_coverage == 1 && $save_coverage == 1} {
 
 # Zoom
 if {$show_gui == 1 && $show_wave == 1} {
-    eval wave zoomfull -windows wave
+    if {$wave_zoom_range == 0} {
+        eval wave zoom full
+    } else {
+        eval wave zoom range $wave_zoom_start_time $wave_zoom_end_time
+        eval wave cursor time -time $wave_zoom_start_time
+    }
 }
 
 # Quit
