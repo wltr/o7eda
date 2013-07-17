@@ -1,3 +1,4 @@
+l
 #!/usr/bin/tclsh
 
 # --------------------------------------------------
@@ -25,6 +26,7 @@
 
 # Source directory
 set src_dir "../src"
+set o7sim_dir "o7sim"
 
 # Source files in compilation order
 set src {
@@ -76,6 +78,17 @@ set show_wave 1
 set quit_at_end 0
 
 # Waveform parameters
+# Waveform parameters
+# manual wave
+set own_wave 0
+set own_wave_name "wave.do"
+
+# GUI parameters
+if {$own_wave == 1} {
+    set show_gui 0
+    set show_wave 0
+}
+
 # {Object Recursive}
 set wave_patterns {
     {"/*" 0}
@@ -122,11 +135,14 @@ puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp
 puts "-------------------------------------------------------------------"
 
 # Logging filenames
+if {[file isdirectory $o7sim_dir] == 0 } {
+    eval [file mkdir $o7sim_dir]
+}
 set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
-set transcript_filename [format "o7sim_%s_transcript.log" $log_timestamp]
-set wlf_log_db_filename [format "o7sim_%s_log.wlf" $log_timestamp]
-set coverage_db_filename [format "o7sim_%s_coverage.ucdb" $log_timestamp]
-set compile_time_filename "o7sim_compile_times.log"
+set transcript_filename [format "%s/o7sim_%s_transcript.log" $o7sim_dir $log_timestamp]
+set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $o7sim_dir $log_timestamp]
+set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $o7sim_dir $log_timestamp]
+set compile_time_filename [format "%s/o7sim_compile_times.log" $o7sim_dir]
 
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
@@ -361,6 +377,12 @@ if {$show_gui == 1 && $show_wave == 1} {
         eval wave cursor time -time $wave_zoom_start_time
     }
 }
+
+# Own wave.do file
+if {$own_wave == 1} {
+    eval source $own_wave_name
+}
+
 
 # Quit
 if {$quit_at_end == 1} {
