@@ -1,4 +1,3 @@
-l
 #!/usr/bin/tclsh
 
 # --------------------------------------------------
@@ -78,7 +77,7 @@ set show_wave 1
 set quit_at_end 0
 
 # Waveform parameters
-# Waveform parameters
+
 # manual wave
 set own_wave 0
 set own_wave_name "wave.do"
