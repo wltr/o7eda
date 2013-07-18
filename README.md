@@ -1,11 +1,11 @@
 o7sim
 =====
 
-A ModelSim simulation script inspired by the students of HSSE07 at the Upper Austrian University of Applied Sciences Hagenberg and published under the MIT License.
+This is a [Mentor Graphics ModelSim](http://www.mentor.com/) simulation script inspired by the students of HSSE07 at the [Upper Austrian University of Applied Sciences Hagenberg](http://www.fh-ooe.at/hsd) and published under the MIT License.
 
-As many other EDA tools, ModelSim from Mentor Graphics supports scripting. This provides the abbility to automate simulation workflows using TCL scripts. By adjusting the configuration parameters, all simulation steps are done automatically. If you have any patches, feel free to submit them.
+The majority of EDA tools supports Tcl scripting. This provides the ability to automate simulation workflows. By adjusting the configuration parameters, all simulation steps are done automatically.
 
-Available features:
+Currently available features:
 - Mixed-language support: VHDL, Verilog, SystemVerilog
 - Custom compile order
 - UVM support
@@ -13,9 +13,11 @@ Available features:
 - Only modified files are recompiled
 - And many more...
 
+If you have any patches, feel free to submit them.
+
 Usage
 -----
 
-To use it, just modify the configuration parameters at the beginning of the file and start the script from the ModelSim command line with the following command:
+In order to use this script modify the configuration parameters at the beginning of the file and start the script from the ModelSim command line with the following command:
 
     source o7sim.tcl
