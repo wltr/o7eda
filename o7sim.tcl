@@ -128,6 +128,8 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
+eval .main clear
+
 set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
 puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp]
@@ -146,7 +148,7 @@ set compile_time_filename [format "%s/o7sim_compile_times.log" $o7sim_dir]
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
     puts "Clean-up"
-    eval vdel -all
+    eval vdel -all    
 }
 
 # Map work library
