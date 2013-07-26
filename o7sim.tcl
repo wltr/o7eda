@@ -76,6 +76,7 @@ set show_gui 1
 set show_wave 1
 set quit_at_end 0
 
+# Waveform parameters
 # {Object Recursive}
 set wave_patterns {
     {"/*" 0}
