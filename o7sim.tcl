@@ -137,7 +137,7 @@ set compile_time_filename [format "%s/o7sim_compile_times.log" $o7sim_dir]
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
     puts "Clean-up"
-    eval vdel -all    
+    eval vdel -all
 }
 
 # Map work library
