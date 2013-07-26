@@ -11,7 +11,7 @@
 
 # Source directory
 set src_dir "../src"
-set o7sim_dir "o7sim"
+set log_dir "o7sim_log"
 
 # Source files in compilation order
 set src {
@@ -103,7 +103,7 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-.main clear 
+eval .main clear 
 
 set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
@@ -111,14 +111,14 @@ puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp
 puts "-------------------------------------------------------------------"
 
 # Logging filenames
-if {[file isdirectory $o7sim_dir] == 0 } {
-    eval [file mkdir $o7sim_dir]
+if {[file exists $log_dir] == 0 } {
+    file mkdir $log_dir
 }
 set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
-set transcript_filename [format "%s/o7sim_%s_transcript.log" $o7sim_dir $log_timestamp]
-set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $o7sim_dir $log_timestamp]
-set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $o7sim_dir $log_timestamp]
-set compile_time_filename [format "%s/o7sim_compile_times.log" $o7sim_dir]
+set transcript_filename [format "%s/o7sim_%s_transcript.log" $log_dir $log_timestamp]
+set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $log_dir $log_timestamp]
+set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $log_dir $log_timestamp]
+set compile_time_filename [format "%s/o7sim_compile_times.log" $log_dir]
 
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
