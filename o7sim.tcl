@@ -115,6 +115,8 @@ if {[file exists $log_dir] == 0} {
     file mkdir $log_dir
 }
 set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
+set log_dir [format "%s/%s" $log_dir $log_timestamp]
+file mkdir $log_dir
 set vsim_log_filename [format "%s/o7sim_%s_vsim.log" $log_dir $log_timestamp]
 set vlog_log_filename [format "%s/o7sim_%s_vlog.log" $log_dir $log_timestamp]
 set vcom_log_filename [format "%s/o7sim_%s_vcom.log" $log_dir $log_timestamp]
