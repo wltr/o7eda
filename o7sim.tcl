@@ -111,11 +111,13 @@ puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp
 puts "-------------------------------------------------------------------"
 
 # Logging filenames
-if {[file exists $log_dir] == 0 } {
+if {[file exists $log_dir] == 0} {
     file mkdir $log_dir
 }
 set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
-set transcript_filename [format "%s/o7sim_%s_transcript.log" $log_dir $log_timestamp]
+set vsim_log_filename [format "%s/o7sim_%s_vsim.log" $log_dir $log_timestamp]
+set vlog_log_filename [format "%s/o7sim_%s_vlog.log" $log_dir $log_timestamp]
+set vcom_log_filename [format "%s/o7sim_%s_vcom.log" $log_dir $log_timestamp]
 set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $log_dir $log_timestamp]
 set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $log_dir $log_timestamp]
 set compile_time_filename [format "%s/o7sim_compile_times.log" $log_dir]
@@ -203,15 +205,15 @@ foreach src_file $src {
         if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
             puts [format "Compiling VHDL source: %s" $src_file]
-            eval vcom -novopt $vhdl_param -work $work_lib $file_name
+            eval vcom -l $vcom_log_filename -novopt $vhdl_param -work $work_lib $file_name
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
             puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -l $vlog_log_filename -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
             puts [format "Compiling SystemVerilog source: %s" $src_file]
-            eval vlog -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval vlog -l $vlog_log_filename -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
@@ -238,7 +240,7 @@ foreach sim_lib $sim_libs {
     append vsim_lib_param [format " -L %s" [lindex $sim_lib 0]]
 }
 
-set runtime [time [format "vsim -novopt -t %s -wlf %s -l %s %s %s %s" $time_unit $wlf_log_db_filename $transcript_filename $vsim_lib_param $vsim_param $design]]
+set runtime [time [format "vsim -novopt -t %s -wlf %s -l %s %s %s %s" $time_unit $wlf_log_db_filename $vsim_log_filename $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
 puts [format "Elaboration time: %.4f sec" $ct_secs]
