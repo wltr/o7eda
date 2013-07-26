@@ -285,11 +285,11 @@ if {$show_gui == 1 && $show_wave == 1} {
     }
     set sig_list [lsort -unique -dictionary -index 0 $sig_list]
     foreach sig $sig_list {
-        set name [lindex $sig 0]
+        set name [string trim [lindex $sig 0]]
         set type [lindex $sig 1]
         set ignore 0
         foreach ignore_pattern $wave_ignores {
-            if {[string match $ignore_pattern $name] == 1} {
+            if {[string match [string trim $ignore_pattern] $name] == 1} {
                 set ignore 1
             }
         }
