@@ -76,18 +76,6 @@ set show_gui 1
 set show_wave 1
 set quit_at_end 0
 
-# Waveform parameters
-
-# manual wave
-set own_wave 0
-set own_wave_name "wave.do"
-
-# GUI parameters
-if {$own_wave == 1} {
-    set show_gui 0
-    set show_wave 0
-}
-
 # {Object Recursive}
 set wave_patterns {
     {"/*" 0}
@@ -128,7 +116,7 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-eval .main clear
+.main clear 
 
 set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
@@ -378,12 +366,6 @@ if {$show_gui == 1 && $show_wave == 1} {
         eval wave cursor time -time $wave_zoom_start_time
     }
 }
-
-# Own wave.do file
-if {$own_wave == 1} {
-    eval source $own_wave_name
-}
-
 
 # Quit
 if {$quit_at_end == 1} {
