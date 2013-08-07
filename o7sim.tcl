@@ -103,7 +103,7 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-eval .main clear 
+eval .main clear
 
 set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
@@ -122,7 +122,7 @@ set vlog_log_filename [format "%s/o7sim_%s_vlog.log" $log_dir $log_timestamp]
 set vcom_log_filename [format "%s/o7sim_%s_vcom.log" $log_dir $log_timestamp]
 set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $log_dir $log_timestamp]
 set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $log_dir $log_timestamp]
-set compile_time_filename [format "%s/o7sim_compile_times.log" $log_dir]
+set compile_time_filename "o7sim_compile_times.log"
 
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
