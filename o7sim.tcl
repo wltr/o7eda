@@ -322,7 +322,9 @@ if {$show_gui == 1 && $show_wave == 1} {
             }
             set label [lindex $path [expr [llength $path] - 1]]
             append wave_param [format " -label %s" $label]
-            eval add wave -radix $wave_radix $wave_param $name
+	          if { [catch {eval add wave -radix $wave_radix $wave_param $name} msg] } {
+		            puts "couldnt add to wave: $msg"
+	          }
         }
     }
     eval configure wave -timelineunits $wave_time_unit
