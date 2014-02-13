@@ -103,8 +103,6 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-eval .main clear
-
 set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 puts "\n-------------------------------------------------------------------"
 puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp]
