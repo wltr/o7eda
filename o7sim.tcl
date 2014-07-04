@@ -59,7 +59,7 @@ set vsim_param "-onfinish final"
 
 # Program parameters
 set show_gui 1
-set show_wave 1
+set create_wave 1
 set quit_at_end 0
 
 # Waveform parameters
@@ -257,7 +257,7 @@ if {$enable_atv == 1} {
 }
 
 # Generate wave form
-if {$show_gui == 1 && $show_wave == 1} {
+if {$show_gui == 1 && $create_wave == 1} {
     set wave_expand_param ""
     if {$wave_expand == 1} {
         append wave_expand_param "-expand"
@@ -326,7 +326,7 @@ if {$show_gui == 1 && $show_wave == 1} {
         }
     }
     eval configure wave -timelineunits $wave_time_unit
-} elseif {$show_gui == 0 && $show_wave == 1} {
+} elseif {$show_gui == 0 && $create_wave == 1} {
     foreach wave_pattern $wave_patterns {
         set find_param ""
         if {[lindex $wave_pattern 1] == 1} {
@@ -349,7 +349,7 @@ if {$enable_coverage == 1 && $save_coverage == 1} {
 }
 
 # Zoom
-if {$show_gui == 1 && $show_wave == 1} {
+if {$show_gui == 1 && $create_wave == 1} {
     if {$wave_zoom_range == 0} {
         eval wave zoom full
     } else {
