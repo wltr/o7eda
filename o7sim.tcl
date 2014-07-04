@@ -102,33 +102,35 @@ set save_compile_times 1
 # DO NOT EDIT BELOW THIS LINE
 #------------------------------------------------------------------------------
 
-set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
-puts "\n-------------------------------------------------------------------"
-puts [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp]
-puts "-------------------------------------------------------------------"
-
 # Logging filenames
 if {[file exists $log_dir] == 0} {
     file mkdir $log_dir
 }
+set start_timestamp [clock format [clock seconds] -format {%d. %B %Y %H:%M:%S}]
 set log_timestamp [clock format [clock seconds] -format {%Y%m%d%H%M%S}]
 set log_dir [format "%s/%s" $log_dir $log_timestamp]
 file mkdir $log_dir
-set vsim_log_filename [format "%s/o7sim_%s_vsim.log" $log_dir $log_timestamp]
-set vlog_log_filename [format "%s/o7sim_%s_vlog.log" $log_dir $log_timestamp]
-set vcom_log_filename [format "%s/o7sim_%s_vcom.log" $log_dir $log_timestamp]
-set wlf_log_db_filename [format "%s/o7sim_%s_log.wlf" $log_dir $log_timestamp]
-set coverage_db_filename [format "%s/o7sim_%s_coverage.ucdb" $log_dir $log_timestamp]
+set sim_log_filename [format "%s/o7sim_%s_sim.log" $log_dir $log_timestamp]
+set com_log_filename [format "%s/o7sim_%s_com.log" $log_dir $log_timestamp]
+set wlf_log_filename [format "%s/o7sim_%s_log.wlf" $log_dir $log_timestamp]
+set cov_log_filename [format "%s/o7sim_%s_cov.ucdb" $log_dir $log_timestamp]
 set compile_time_filename "o7sim_compile_times.log"
+
+# Set transcript file name
+eval transcript file $com_log_filename
+
+eval echo "\n-------------------------------------------------------------------"
+eval echo [format "Started o7sim v%s Simulation Script, %s" $version $start_timestamp]
+eval echo "-------------------------------------------------------------------"
 
 # Clean-up
 if {$save_compile_times == 0 && [file exists $work_lib] == 1} {
-    puts "Clean-up"
+    eval echo "Clean-up"
     eval vdel -all
 }
 
 # Map work library
-puts [format "Mapping work library: %s" $work_lib]
+eval echo [format "Mapping work library: %s" $work_lib]
 eval vlib $work_lib
 eval vmap  $work_lib $work_lib
 
@@ -136,13 +138,13 @@ eval vmap  $work_lib $work_lib
 foreach sim_lib $sim_libs {
     set sim_lib_name [lindex $sim_lib 0]
     set sim_lib_path [lindex $sim_lib 1]
-    puts [format "Mapping simulation library: %s" $sim_lib_name]
+    eval echo [format "Mapping simulation library: %s" $sim_lib_name]
     eval vmap $sim_lib_name $sim_lib_path
 }
 
 # Compile UVM library
 if {$enable_custom_uvm == 1} {
-    puts "Compiling UVM library"
+    eval echo "Compiling UVM library"
     eval vlog +incdir+$custom_uvm_home/src -work $work_lib $custom_uvm_home/src/uvm.sv
     append vsim_param [format " -sv_lib %s" $custom_uvm_dpi]
     lappend systemverilog_inc_paths [format "%s/src" $custom_uvm_home]
@@ -150,7 +152,7 @@ if {$enable_custom_uvm == 1} {
 
 # Set coverage parameters
 if {$enable_coverage == 1} {
-    puts "Coverage enabled"
+    eval echo "Coverage enabled"
     append vhdl_param " +cover"
     append verilog_param " +cover"
     append systemverilog_param " +cover"
@@ -159,13 +161,13 @@ if {$enable_coverage == 1} {
 
 # Set standard delay format timing parameters
 if {$enable_sdf_timing == 1} {
-    puts "Adding SDF timing information"
+    eval echo "Adding SDF timing information"
     append vsim_param [format " -sdfmax %s=%s/%s" $sdf_timing_filename $src_dir $sdf_timing_instance]
 }
 
 # Set assertion thread viewing parameters
 if {$enable_atv == 1} {
-    puts "Assertion thread viewing enabled"
+    eval echo "Assertion thread viewing enabled"
     append vsim_param " -assertdebug"
 }
 
@@ -198,21 +200,21 @@ foreach src_file $src {
     set file_name [format "%s/%s" $src_dir $src_file]
     # Check if source has changed
     if {$save_compile_times == 1 && [info exists last_compile_time($file_name)] == 1 && [file mtime $file_name] <= $last_compile_time($file_name)} {
-        puts [format "Source has not changed: %s" $src_file]
+        eval echo [format "Source has not changed: %s" $src_file]
         set new_compile_time($file_name) $last_compile_time($file_name)
     } else {
         if {[string match $vhdl_ext $src_file] == 1} {
             # Compile VHDL source
-            puts [format "Compiling VHDL source: %s" $src_file]
-            eval vcom -l $vcom_log_filename -novopt $vhdl_param -work $work_lib $file_name
+            eval echo [format "Compiling VHDL source: %s" $src_file]
+            eval vcom -novopt $vhdl_param -work $work_lib $file_name
         } elseif {[string match $verilog_ext $src_file] == 1} {
             # Compile Verilog source
-            puts [format "Compiling Verilog source: %s" $src_file]
-            eval vlog -l $vlog_log_filename -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval echo [format "Compiling Verilog source: %s" $src_file]
+            eval vlog -novopt $verilog_param $verilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         } elseif {[string match $systemverilog_ext $src_file] == 1} {
             # Compile SystemVerilog source
-            puts [format "Compiling SystemVerilog source: %s" $src_file]
-            eval vlog -l $vlog_log_filename -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
+            eval echo [format "Compiling SystemVerilog source: %s" $src_file]
+            eval vlog -novopt $systemverilog_param $systemverilog_inc_param +incdir+$src_dir -work $work_lib $file_name
         }
         set new_compile_time($file_name) [clock seconds]
     }
@@ -222,16 +224,16 @@ foreach src_file $src {
 if {$save_compile_times == 1} {
     set fp [open $compile_time_filename w]
     foreach entry [array names new_compile_time] {
-        puts $fp [format "%s %u" $entry $new_compile_time($entry)]
+        eval echo $fp [format "%s %u" $entry $new_compile_time($entry)]
     }
     close $fp
 }
 
 # Simulate
-puts "Starting simulation"
+eval echo "Starting simulation"
 
 if [batch_mode] {
-    puts "Detected batch mode"
+    eval echo "Detected batch mode"
     eval onbreak resume
 }
 
@@ -240,10 +242,10 @@ foreach sim_lib $sim_libs {
     append vsim_lib_param [format " -L %s" [lindex $sim_lib 0]]
 }
 
-set runtime [time [format "vsim -novopt -t %s -wlf %s -l %s %s %s %s" $time_unit $wlf_log_db_filename $vsim_log_filename $vsim_lib_param $vsim_param $design]]
+set runtime [time [format "vsim -novopt -t %s -wlf %s -l %s %s %s %s" $time_unit $wlf_log_filename $sim_log_filename $vsim_lib_param $vsim_param $design]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
-puts [format "Elaboration time: %.4f sec" $ct_secs]
+eval echo [format "Elaboration time: %.4f sec" $ct_secs]
 
 # Enable assertion thread view logging
 if {$enable_atv == 1} {
@@ -321,7 +323,7 @@ if {$create_wave == 1} {
             set label [lindex $path [expr [llength $path] - 1]]
             append wave_param [format " -label %s" $label]
             if {[catch {eval add wave -radix $wave_radix $wave_param $name} errmsg]} {
-                puts [format "Wave error: %s" $errmsg]
+                eval echo [format "Wave error: %s" $errmsg]
             }
         }
     }
@@ -331,12 +333,12 @@ if {$create_wave == 1} {
 set runtime [time [format "run %s" $run_time]]
 regexp {\d+} $runtime ct_microsecs
 set ct_secs [expr {$ct_microsecs / 1000000.0}]
-puts [format "Simulation time: %s %s" $now $time_unit]
-puts [format "Run time: %.4f sec" $ct_secs]
+eval echo [format "Simulation time: %s %s" $now $time_unit]
+eval echo [format "Run time: %.4f sec" $ct_secs]
 
 # Save coverage database
 if {$enable_coverage == 1 && $save_coverage == 1} {
-    eval coverage save $coverage_db_filename
+    eval coverage save $cov_log_filename
 }
 
 # Set wave time units and zoom
