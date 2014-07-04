@@ -6,7 +6,7 @@
 # <http://github.com/wltr/eda-o7sim>
 #
 # Version:
-  set version 0.5
+  set version 0.6
 #------------------------------------------------------------------------------
 
 # Source directory
