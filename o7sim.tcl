@@ -58,14 +58,13 @@ set systemverilog_param "-fsmverbose btw"
 set vsim_param "-onfinish final"
 
 # Program parameters
-set show_gui 1
-set create_wave 1
 set quit_at_end 0
 
 # Waveform parameters
+set create_wave 1
 # {Object Recursive}
 set wave_patterns {
-    {"/*" 0}
+    {"/testbench/*" 0}
     {"/testbench/duv/*" 1}
 }
 set wave_ignores {
@@ -231,7 +230,8 @@ if {$save_compile_times == 1} {
 # Simulate
 puts "Starting simulation"
 
-if {$show_gui == 0} {
+if [batch_mode] {
+    puts "Detected batch mode"
     eval onbreak resume
 }
 
@@ -257,7 +257,7 @@ if {$enable_atv == 1} {
 }
 
 # Generate wave form
-if {$show_gui == 1 && $create_wave == 1} {
+if {$create_wave == 1} {
     set wave_expand_param ""
     if {$wave_expand == 1} {
         append wave_expand_param "-expand"
@@ -325,15 +325,6 @@ if {$show_gui == 1 && $create_wave == 1} {
             }
         }
     }
-    eval configure wave -timelineunits $wave_time_unit
-} elseif {$show_gui == 0 && $create_wave == 1} {
-    foreach wave_pattern $wave_patterns {
-        set find_param ""
-        if {[lindex $wave_pattern 1] == 1} {
-            set find_param "-recursive"
-        }
-        eval log $find_param [lindex $wave_pattern 0]
-    }
 }
 
 # Run
@@ -348,8 +339,9 @@ if {$enable_coverage == 1 && $save_coverage == 1} {
     eval coverage save $coverage_db_filename
 }
 
-# Zoom
-if {$show_gui == 1 && $create_wave == 1} {
+# Set wave time units and zoom
+if {$create_wave == 1 && [batch_mode] == 0} {
+    eval configure wave -timelineunits $wave_time_unit
     if {$wave_zoom_range == 0} {
         eval wave zoom full
     } else {
