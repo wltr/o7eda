@@ -2,7 +2,7 @@
 
 #------------------------------------------------------------------------------
 # o7sim - Mentor Graphics ModelSim Simulation Script
-# MIT License, Copyright (c) 2013 Johannes Walter
+# MIT License, Copyright (c) 2015 Johannes Walter
 # <http://github.com/wltr/o7eda>
 #
 # Version:
