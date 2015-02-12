@@ -1,5 +1,4 @@
-o7sim
-=====
+# o7sim
 
 This is a [Mentor Graphics ModelSim](http://www.mentor.com/) simulation script inspired by the students of HSSE07 at the [Upper Austrian University of Applied Sciences Hagenberg](http://www.fh-ooe.at/hsd) and published under the MIT License.
 
@@ -15,8 +14,7 @@ Currently available features:
 
 If you have any patches, feel free to submit them.
 
-Usage
------
+## Usage
 
 In order to use this script modify the configuration parameters at the beginning of the file and start the script from the ModelSim command line with the following command:
 
