@@ -1,4 +1,4 @@
-# o7sim
+## o7sim
 
 This is a [Mentor Graphics ModelSim](http://www.mentor.com/) simulation script inspired by the students of HSSE07 at the [Upper Austrian University of Applied Sciences Hagenberg](http://www.fh-ooe.at/hsd) and published under the MIT License.
 
